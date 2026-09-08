@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borang Maklumat Syarikat & Produk</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for product table container */
+        .table-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .table-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .table-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Sticky table headers */
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Header Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-md">
+                    <i class="fa-solid fa-boxes-packing text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900 leading-tight">Sistem Borang Produk</h1>
+                    <p class="text-xs text-slate-500">Pendaftaran Maklumat Syarikat & Katalog Produk</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button type="button" onclick="saveDraft()" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i> Simpan Draf
+                </button>
+                <button type="button" onclick="loadDraft()" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors">
+                    <i class="fa-solid fa-folder-open mr-1.5"></i> Muat Draf
+                </button>
+                <button type="button" onclick="resetFormConfirmation()" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> Set Semula
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+        <form id="productForm" onsubmit="handleFormSubmit(event)" class="space-y-8">
+
+            <!-- Bahagian 1: Maklumat Syarikat -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-200 hover:shadow-md">
+                <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white font-bold text-sm">1</span>
+                        <h2 class="text-base font-semibold tracking-wide">Bahagian 1: Maklumat Syarikat</h2>
+                    </div>
+                    <span class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full border border-slate-700">Wajib Diisi</span>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Nama Syarikat -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label for="namaSyarikat" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Nama Syarikat <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative rounded-lg shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-building"></i>
+                            </div>
+                            <input type="text" id="namaSyarikat" name="namaSyarikat" required
+                                placeholder="Cth: Syarikat Megah Jaya Sdn Bhd"
+                                class="block w-full pl-10 pr-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white placeholder-slate-400">
+                        </div>
+                    </div>
+
+                    <!-- Person In-Charge -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label for="personInCharge" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Person In-Charge <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative rounded-lg shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <input type="text" id="personInCharge" name="personInCharge" required
+                                placeholder="Cth: Ahmad Razali"
+                                class="block w-full pl-10 pr-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white placeholder-slate-400">
+                        </div>
+                    </div>
+
+                    <!-- No.Tel (mobile) -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label for="noTel" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            No. Tel (Mobile) <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative rounded-lg shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <input type="tel" id="noTel" name="noTel" required
+                                placeholder="Cth: 012-3456789"
+                                class="block w-full pl-10 pr-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white placeholder-slate-400">
+                        </div>
+                    </div>
+
+                    <!-- E-mel -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label for="email" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            E-mel <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative rounded-lg shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <input type="email" id="email" name="email" required
+                                placeholder="Cth: pengurusan@syarikat.com"
+                                class="block w-full pl-10 pr-3 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white placeholder-slate-400">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bahagian 2: Maklumat Produk -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-200 hover:shadow-md flex flex-col">
+                <!-- Header -->
+                <div class="bg-slate-900 text-white px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white font-bold text-sm">2</span>
+                        <div>
+                            <h2 class="text-base font-semibold tracking-wide">Bahagian 2: Maklumat Produk</h2>
+                            <p class="text-xs text-slate-400">Sila masukkan butiran item. Anda boleh menambah baris jika perlu.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Action Controls -->
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="addRow()" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                            <i class="fa-solid fa-plus mr-1.5"></i> Tambah 1 Baris
+                        </button>
+                        <button type="button" onclick="addMultipleRows(5)" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-all">
+                            <i class="fa-solid fa-layer-group mr-1.5"></i> +5 Baris
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Bar -->
+                <div class="bg-slate-50 border-b border-slate-200 px-6 py-3 flex flex-wrap items-center justify-between text-xs text-slate-600 gap-4">
+                    <div class="flex items-center space-x-4">
+                        <span class="font-medium text-slate-700"><i class="fa-solid fa-list-ol text-brand-600 mr-1"></i> Jumlah Baris: <strong id="rowCountDisplay" class="text-brand-600 font-bold">5</strong></span>
+                        <span class="text-slate-300">|</span>
+                        <span><i class="fa-solid fa-box text-emerald-600 mr-1"></i> SKU Terisi: <strong id="filledSkuDisplay" class="text-slate-800 font-semibold">0</strong></span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-slate-500 italic">
+                        <i class="fa-solid fa-arrows-left-right text-slate-400"></i>
+                        <span>Petunjuk: Jadual ini boleh di-scroll ke kanan & bawah</span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Scrollable Table Container -->
+                <div class="p-4">
+                    <div class="table-scroll overflow-x-auto overflow-y-auto max-h-[480px] border border-slate-200 rounded-xl bg-white shadow-inner relative">
+                        <table class="w-full text-left border-collapse min-w-[1200px]">
+                            <thead class="bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-wider sticky-header shadow-sm">
+                                <tr>
+                                    <th class="py-3.5 px-3 text-center border-b border-r border-slate-200 w-12 bg-slate-100">#</th>
+                                    <th class="py-3.5 px-3 border-b border-r border-slate-200 min-w-[150px]">Barcode Carton</th>
+                                    <th class="py-3.5 px-3 border-b border-r border-slate-200 min-w-[150px]">Barcode Unit</th>
+                                    <th class="py-3.5 px-3 border-b border-r border-slate-200 min-w-[200px]">SKU Name <span class="text-rose-500">*</span></th>
+                                    <th class="py-3.5 px-3 border-b border-r border-slate-200 min-w-[140px]">Pallet Size<br><span class="text-[10px] text-slate-500 font-normal lowercase">(Carton / Pallet)</span></th>
+                                    <th class="py-3.5 px-3 border-b border-r border-slate-200 min-w-[140px]">Carton Size<br><span class="text-[10px] text-slate-500 font-normal lowercase">(Qty / Carton)</span></th>
+                                    <th class="py-3.5 px-3 border-b border-r border-slate-200 min-w-[210px]">Carton Dimension<br><span class="text-[10px] text-slate-500 font-normal lowercase">(L x W x H in cm)</span></th>
+                                    <th class="py-3.5 px-3 border-b border-r border-slate-200 min-w-[140px]">Carton Price<br><span class="text-[10px] text-slate-500 font-normal uppercase">(RM)</span></th>
+                                    <th class="py-3.5 px-3 border-b border-r border-slate-200 min-w-[150px]">Selling Price<br><span class="text-[10px] text-slate-500 font-normal uppercase">Per Carton (RM)</span></th>
+                                    <th class="py-3.5 px-3 text-center border-b border-slate-200 w-16 bg-slate-100">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productTableBody" class="divide-y divide-slate-200 text-sm">
+                                <!-- JS will populate 5 initial rows dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bottom Action & Quick Helper Toolbar -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="addRow()" class="px-3.5 py-2 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg transition-colors flex items-center">
+                            <i class="fa-solid fa-plus mr-1.5"></i> Tambah Baris
+                        </button>
+                        <button type="button" onclick="addMultipleRows(5)" class="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition-colors flex items-center">
+                            <i class="fa-solid fa-bars-staggered mr-1.5"></i> Tambah 5 Baris
+                        </button>
+                    </div>
+
+                    <div class="text-xs text-slate-500 text-center sm:text-right">
+                        * Medan bertanda <span class="text-rose-500 font-bold">*</span> pada SKU Name adalah disyorkan untuk pengenalan item.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Submit Footer Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Selesai Memasukkan Data?</h3>
+                    <p class="text-xs text-slate-500">Pastikan semua butiran maklumat syarikat dan produk telah disemak dengan teliti.</p>
+                </div>
+                
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <button type="button" onclick="exportToCSV()" class="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-file-excel mr-2 text-emerald-600"></i> Eksport Ke CSV
+                    </button>
+                    <button type="submit" id="submitBtn" class="w-full sm:w-auto px-6 py-2.5 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md transition-all flex items-center justify-center focus:ring-4 focus:ring-brand-200">
+                        <i class="fa-solid fa-paper-plane mr-2" id="submitIcon"></i> <span id="submitBtnText">Hantar Borang & Simpan</span>
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </main>
+
+    <!-- Confirmation Reset Modal -->
+    <div id="resetModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100">
+            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-4 mx-auto">
+                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-900 text-center mb-2">Sahkan Set Semula Borang?</h3>
+            <p class="text-xs text-slate-500 text-center mb-6">Tindakan ini akan memadam semua maklumat syarikat dan data produk yang telah diisi. Tindakan ini tidak boleh dibatalkan.</p>
+            <div class="flex items-center space-x-3">
+                <button type="button" onclick="closeResetModal()" class="w-1/2 py-2.5 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Batal</button>
+                <button type="button" onclick="confirmReset()" class="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 rounded-xl text-xs font-semibold text-white transition-colors">Ya, Set Semula</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Summary Preview Modal -->
+    <div id="summaryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl border border-slate-100 my-8">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-circle-check text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">Ringkasan Penyerahan Borang</h3>
+                        <p class="text-xs text-slate-500">Borang berjaya disahkan. Berikut adalah ringkasan butiran anda.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeSummaryModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="py-6 space-y-6" id="summaryModalContent">
+                <!-- Dynamic Summary Content Loaded Here -->
+            </div>
+
+            <div class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <span class="text-xs text-slate-500"><i class="fa-solid fa-circle-info text-brand-500 mr-1"></i> Rekod telah disimpan ke dalam simpanan tempatan.</span>
+                <div class="flex items-center space-x-3">
+                    <button type="button" onclick="window.print()" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+                        <i class="fa-solid fa-print mr-1.5"></i> Cetak Ringkasan
+                    </button>
+                    <button type="button" onclick="closeSummaryModal()" class="px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+            &copy; 2026 Borang Pengurusan Produk Syarikat. Semua Hak Cipta Terpelihara.
+        </div>
+    </footer>
+
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPjG_9ROB82JMyS8uPhx4xjyo2TI-4f5wYlPUh4QX-9aVQkUwZIL4Z9VjLamiX6M0/exec';
+        let rowCounter = 0;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedDraft = localStorage.getItem('company_product_form_draft');
+            if (!savedDraft) {
+                for (let i = 0; i < 5; i++) {
+                    addRow();
+                }
+            } else {
+                loadDraft(true);
+            }
+        });
+
+        function addRow(data = {}) {
+            rowCounter++;
+            const tbody = document.getElementById('productTableBody');
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50/80 transition-colors";
+            tr.id = `row_${rowCounter}`;
+            
+            tr.innerHTML = `
+                <td class="py-2.5 px-3 text-center border-b border-r border-slate-200 font-semibold text-slate-500 row-number text-xs bg-slate-50/50">
+                    ${tbody.children.length + 1}
+                </td>
+                <td class="py-2.5 px-2 border-b border-r border-slate-200">
+                    <input type="text" name="barcodeCarton_${rowCounter}" value="${data.barcodeCarton || ''}" placeholder="Cth: 888123456"
+                        class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                </td>
+                <td class="py-2.5 px-2 border-b border-r border-slate-200">
+                    <input type="text" name="barcodeUnit_${rowCounter}" value="${data.barcodeUnit || ''}" placeholder="Cth: 888123000"
+                        class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                </td>
+                <td class="py-2.5 px-2 border-b border-r border-slate-200">
+                    <input type="text" name="skuName_${rowCounter}" value="${data.skuName || ''}" oninput="updateStats()" placeholder="Cth: Sabun Cuci 500ml"
+                        class="w-full px-2.5 py-1.5 text-xs font-medium text-slate-800 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                </td>
+                <td class="py-2.5 px-2 border-b border-r border-slate-200">
+                    <input type="text" name="palletSize_${rowCounter}" value="${data.palletSize || ''}" placeholder="Cth: 40"
+                        class="w-full px-2.5 py-1.5 text-xs text-right border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                </td>
+                <td class="py-2.5 px-2 border-b border-r border-slate-200">
+                    <input type="text" name="cartonSize_${rowCounter}" value="${data.cartonSize || ''}" placeholder="Cth: 24"
+                        class="w-full px-2.5 py-1.5 text-xs text-right border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                </td>
+                <td class="py-2.5 px-2 border-b border-r border-slate-200">
+                    <div class="flex items-center space-x-1">
+                        <input type="number" step="any" name="dimL_${rowCounter}" value="${data.dimL || ''}" placeholder="L" title="Panjang (cm)"
+                            class="w-1/3 px-1.5 py-1.5 text-xs text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                        <span class="text-slate-400 text-xs">x</span>
+                        <input type="number" step="any" name="dimW_${rowCounter}" value="${data.dimW || ''}" placeholder="W" title="Lebar (cm)"
+                            class="w-1/3 px-1.5 py-1.5 text-xs text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                        <span class="text-slate-400 text-xs">x</span>
+                        <input type="number" step="any" name="dimH_${rowCounter}" value="${data.dimH || ''}" placeholder="H" title="Tinggi (cm)"
+                            class="w-1/3 px-1.5 py-1.5 text-xs text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                    </div>
+                </td>
+                <td class="py-2.5 px-2 border-b border-r border-slate-200">
+                    <input type="number" step="0.01" name="cartonPrice_${rowCounter}" value="${data.cartonPrice || ''}" placeholder="0.00"
+                        class="w-full px-2.5 py-1.5 text-xs text-right border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white font-mono">
+                </td>
+                <td class="py-2.5 px-2 border-b border-r border-slate-200">
+                    <input type="number" step="0.01" name="sellingPrice_${rowCounter}" value="${data.sellingPrice || ''}" placeholder="0.00"
+                        class="w-full px-2.5 py-1.5 text-xs text-right border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white font-mono">
+                </td>
+                <td class="py-2.5 px-2 border-b text-center bg-slate-50/30">
+                    <button type="button" onclick="deleteRow(this)" title="Padam Baris"
+                        class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            updateRowIndices();
+            updateStats();
+        }
+
+        function addMultipleRows(count) {
+            for (let i = 0; i < count; i++) {
+                addRow();
+            }
+        }
+
+        function deleteRow(button) {
+            const tbody = document.getElementById('productTableBody');
+            if (tbody.children.length <= 1) {
+                showToast('Sekurang-kurangnya 1 baris produk diperlukan.', 'warning');
+                return;
+            }
+            const row = button.closest('tr');
+            if (row) {
+                row.remove();
+                updateRowIndices();
+                updateStats();
+            }
+        }
+
+        function updateRowIndices() {
+            const tbody = document.getElementById('productTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach((row, index) => {
+                const numberCell = row.querySelector('.row-number');
+                if (numberCell) {
+                    numberCell.textContent = index + 1;
+                }
+            });
+            document.getElementById('rowCountDisplay').textContent = rows.length;
+        }
+
+        function updateStats() {
+            const tbody = document.getElementById('productTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            let filledSkuCount = 0;
+
+            rows.forEach(row => {
+                const skuInput = row.querySelector('input[name^="skuName_"]');
+                if (skuInput && skuInput.value.trim() !== '') {
+                    filledSkuCount++;
+                }
+            });
+
+            document.getElementById('filledSkuDisplay').textContent = filledSkuCount;
+        }
+
+        function getFormData() {
+            const companyData = {
+                namaSyarikat: document.getElementById('namaSyarikat').value.trim(),
+                personInCharge: document.getElementById('personInCharge').value.trim(),
+                noTel: document.getElementById('noTel').value.trim(),
+                email: document.getElementById('email').value.trim()
+            };
+
+            const tbody = document.getElementById('productTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            const products = [];
+
+            rows.forEach((row, index) => {
+                const barcodeCarton = row.querySelector('input[name^="barcodeCarton_"]')?.value.trim() || '';
+                const barcodeUnit = row.querySelector('input[name^="barcodeUnit_"]')?.value.trim() || '';
+                const skuName = row.querySelector('input[name^="skuName_"]')?.value.trim() || '';
+                const palletSize = row.querySelector('input[name^="palletSize_"]')?.value.trim() || '';
+                const cartonSize = row.querySelector('input[name^="cartonSize_"]')?.value.trim() || '';
+                const dimL = row.querySelector('input[name^="dimL_"]')?.value.trim() || '';
+                const dimW = row.querySelector('input[name^="dimW_"]')?.value.trim() || '';
+                const dimH = row.querySelector('input[name^="dimH_"]')?.value.trim() || '';
+                const cartonPrice = row.querySelector('input[name^="cartonPrice_"]')?.value.trim() || '';
+                const sellingPrice = row.querySelector('input[name^="sellingPrice_"]')?.value.trim() || '';
+
+                if (barcodeCarton || barcodeUnit || skuName || palletSize || cartonSize || dimL || dimW || dimH || cartonPrice || sellingPrice) {
+                    products.push({
+                        rowNo: index + 1,
+                        barcodeCarton,
+                        barcodeUnit,
+                        skuName,
+                        palletSize,
+                        cartonSize,
+                        dimension: (dimL || dimW || dimH) ? `${dimL || 0} x ${dimW || 0} x ${dimH || 0} cm` : '-',
+                        dimL, dimW, dimH,
+                        cartonPrice: cartonPrice ? parseFloat(cartonPrice).toFixed(2) : '-',
+                        sellingPrice: sellingPrice ? parseFloat(sellingPrice).toFixed(2) : '-'
+                    });
+                }
+            });
+
+            return { company: companyData, products };
+        }
+
+        function saveDraft() {
+            const data = getFormData();
+            const rawProducts = [];
+            const rows = document.querySelectorAll('#productTableBody tr');
+            rows.forEach(row => {
+                rawProducts.push({
+                    barcodeCarton: row.querySelector('input[name^="barcodeCarton_"]')?.value || '',
+                    barcodeUnit: row.querySelector('input[name^="barcodeUnit_"]')?.value || '',
+                    skuName: row.querySelector('input[name^="skuName_"]')?.value || '',
+                    palletSize: row.querySelector('input[name^="palletSize_"]')?.value || '',
+                    cartonSize: row.querySelector('input[name^="cartonSize_"]')?.value || '',
+                    dimL: row.querySelector('input[name^="dimL_"]')?.value || '',
+                    dimW: row.querySelector('input[name^="dimW_"]')?.value || '',
+                    dimH: row.querySelector('input[name^="dimH_"]')?.value || '',
+                    cartonPrice: row.querySelector('input[name^="cartonPrice_"]')?.value || '',
+                    sellingPrice: row.querySelector('input[name^="sellingPrice_"]')?.value || ''
+                });
+            });
+
+            const draftObj = {
+                company: data.company,
+                rawProducts
+            };
+
+            localStorage.setItem('company_product_form_draft', JSON.stringify(draftObj));
+            showToast('Draf borang berjaya disimpan dalam sistem.', 'success');
+        }
+
+        function loadDraft(isAutoCheck = false) {
+            const savedDraft = localStorage.getItem('company_product_form_draft');
+            if (!savedDraft) {
+                if (!isAutoCheck) showToast('Tiada draf tersimpan ditemui.', 'warning');
+                return;
+            }
+
+            try {
+                const draftObj = JSON.parse(savedDraft);
+                if (draftObj.company) {
+                    document.getElementById('namaSyarikat').value = draftObj.company.namaSyarikat || '';
+                    document.getElementById('personInCharge').value = draftObj.company.personInCharge || '';
+                    document.getElementById('noTel').value = draftObj.company.noTel || '';
+                    document.getElementById('email').value = draftObj.company.email || '';
+                }
+
+                if (draftObj.rawProducts && draftObj.rawProducts.length > 0) {
+                    const tbody = document.getElementById('productTableBody');
+                    tbody.innerHTML = '';
+                    rowCounter = 0;
+                    draftObj.rawProducts.forEach(pData => {
+                        addRow(pData);
+                    });
+                }
+                if (!isAutoCheck) {
+                    showToast('Draf berjaya dimuatkan!', 'success');
+                }
+            } catch (err) {
+                console.error('Error loading draft:', err);
+                if (!isAutoCheck) showToast('Ralat semasa membaca data draf.', 'error');
+            }
+        }
+
+        function resetFormConfirmation() {
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.add('hidden');
+        }
+
+        function confirmReset() {
+            document.getElementById('productForm').reset();
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+            rowCounter = 0;
+            for (let i = 0; i < 5; i++) {
+                addRow();
+            }
+            localStorage.removeItem('company_product_form_draft');
+            closeResetModal();
+            showToast('Borang telah diset semula ke tetapan asal.', 'info');
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const data = getFormData();
+
+            if (!data.company.namaSyarikat || !data.company.personInCharge || !data.company.noTel || !data.company.email) {
+                showToast('Sila lengkapkan semua maklumat syarikat yang diwajibkan.', 'error');
+                return;
+            }
+
+            if (data.products.length === 0) {
+                showToast('Sila masukkan sekurang-kurangnya satu butiran produk di Bahagian 2.', 'warning');
+                return;
+            }
+
+            saveDraft();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const submitIcon = document.getElementById('submitIcon');
+            const submitBtnText = document.getElementById('submitBtnText');
+
+            try {
+                submitBtn.disabled = true;
+                submitIcon.className = "fa-solid fa-spinner fa-spin mr-2";
+                submitBtnText.textContent = "Menghantar ke Google Sheet...";
+
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showToast('Berjaya! Data telah disimpan terus ke Google Sheet.', 'success');
+                } else {
+                    showToast('Amaran: ' + (result.message || 'Gagal menghantar ke Google Sheet.'), 'warning');
+                }
+            } catch (err) {
+                console.error("Error sending to Apps Script:", err);
+                showToast('Data disimpan secara tempatan, tetapi gagal dihantar ke Apps Script. Semak sambungan.', 'warning');
+            } finally {
+                submitBtn.disabled = false;
+                submitIcon.className = "fa-solid fa-paper-plane mr-2";
+                submitBtnText.textContent = "Hantar Borang & Simpan";
+            }
+
+            showSummaryModal(data);
+        }
+
+        function showSummaryModal(data) {
+            const summaryContainer = document.getElementById('summaryModalContent');
+            
+            let productsTableRows = data.products.map(p => `
+                <tr class="border-b border-slate-100 text-xs text-slate-700">
+                    <td class="py-2 px-3 text-center font-medium">${p.rowNo}</td>
+                    <td class="py-2 px-3">${p.barcodeCarton || '-'}</td>
+                    <td class="py-2 px-3">${p.barcodeUnit || '-'}</td>
+                    <td class="py-2 px-3 font-semibold text-slate-900">${p.skuName || '-'}</td>
+                    <td class="py-2 px-3 text-right">${p.palletSize || '-'}</td>
+                    <td class="py-2 px-3 text-right">${p.cartonSize || '-'}</td>
+                    <td class="py-2 px-3 text-center">${p.dimension}</td>
+                    <td class="py-2 px-3 text-right">${p.cartonPrice !== '-' ? 'RM ' + p.cartonPrice : '-'}</td>
+                    <td class="py-2 px-3 text-right font-bold text-brand-700">${p.sellingPrice !== '-' ? 'RM ' + p.sellingPrice : '-'}</td>
+                </tr>
+            `).join('');
+
+            summaryContainer.innerHTML = `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-building mr-1.5"></i> Maklumat Syarikat</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                        <div>
+                            <span class="text-slate-400 block mb-0.5">Nama Syarikat:</span>
+                            <span class="font-bold text-slate-900">${data.company.namaSyarikat}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block mb-0.5">Person In-Charge:</span>
+                            <span class="font-bold text-slate-900">${data.company.personInCharge}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block mb-0.5">No. Tel:</span>
+                            <span class="font-bold text-slate-900">${data.company.noTel}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block mb-0.5">E-mel:</span>
+                            <span class="font-bold text-slate-900">${data.company.email}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500"><i class="fa-solid fa-boxes-stacked mr-1.5"></i> Senarai Produk (${data.products.length} Item)</h4>
+                    </div>
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white max-h-80">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
+                            <thead class="bg-slate-100 text-slate-700 text-[11px] font-bold uppercase sticky top-0">
+                                <tr>
+                                    <th class="py-2.5 px-3 text-center border-b">#</th>
+                                    <th class="py-2.5 px-3 border-b">Barcode Carton</th>
+                                    <th class="py-2.5 px-3 border-b">Barcode Unit</th>
+                                    <th class="py-2.5 px-3 border-b">SKU Name</th>
+                                    <th class="py-2.5 px-3 border-b text-right">Pallet Size</th>
+                                    <th class="py-2.5 px-3 border-b text-right">Carton Size</th>
+                                    <th class="py-2.5 px-3 border-b text-center">Dimension</th>
+                                    <th class="py-2.5 px-3 border-b text-right">Carton Price</th>
+                                    <th class="py-2.5 px-3 border-b text-right">Selling Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${productsTableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('summaryModal').classList.remove('hidden');
+        }
+
+        function closeSummaryModal() {
+            document.getElementById('summaryModal').classList.add('hidden');
+        }
+
+        function exportToCSV() {
+            const data = getFormData();
+
+            if (data.products.length === 0) {
+                showToast('Tiada data produk untuk dieksport. Sila isi maklumat terlebih dahulu.', 'warning');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            csvContent += `MAKLUMAT SYARIKAT\n`;
+            csvContent += `Nama Syarikat,${data.company.namaSyarikat || '-'}\n`;
+            csvContent += `Person In-Charge,${data.company.personInCharge || '-'}\n`;
+            csvContent += `No Tel,${data.company.noTel || '-'}\n`;
+            csvContent += `E-mel,${data.company.email || '-'}\n\n`;
+
+            csvContent += `NO,BARCODE CARTON,BARCODE UNIT,SKU NAME,PALLET SIZE (Carton/Pallet),CARTON SIZE (Qty/Carton),CARTON DIMENSION (L x W x H cm),CARTON PRICE (RM),SELLING PRICE PER CARTON (RM)\n`;
+
+            data.products.forEach(p => {
+                const row = [
+                    p.rowNo,
+                    `"${p.barcodeCarton}"`,
+                    `"${p.barcodeUnit}"`,
+                    `"${p.skuName}"`,
+                    `"${p.palletSize}"`,
+                    `"${p.cartonSize}"`,
+                    `"${p.dimension}"`,
+                    `"${p.cartonPrice}"`,
+                    `"${p.sellingPrice}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const filename = `Produk_${(data.company.namaSyarikat || 'Syarikat').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('Fail CSV berjaya dimuat turun!', 'success');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClasses = 'bg-slate-900 text-white border-slate-700';
+            let iconClass = 'fa-info-circle text-brand-400';
+
+            if (type === 'success') {
+                bgClasses = 'bg-emerald-900 text-white border-emerald-700';
+                iconClass = 'fa-circle-check text-emerald-400';
+            } else if (type === 'error') {
+                bgClasses = 'bg-rose-900 text-white border-rose-700';
+                iconClass = 'fa-circle-exclamation text-rose-400';
+            } else if (type === 'warning') {
+                bgClasses = 'bg-amber-900 text-white border-amber-700';
+                iconClass = 'fa-triangle-exclamation text-amber-400';
+            }
+
+            toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-xl border shadow-lg text-xs font-medium transform transition-all duration-300 translate-y-2 opacity-0 ${bgClasses}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-sm"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
